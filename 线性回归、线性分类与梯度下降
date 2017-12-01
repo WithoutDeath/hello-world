@@ -1,34 +1,46 @@
-import random
+#-*- coding: utf-8 -*-
 import sklearn.datasets as skl
 import numpy as np
 import pylab as pl
+from sklearn.model_selection import train_test_split
+
 class Linear(object):
-    def __init__(self,x,y):
+    def __init__(self):
         self.w=np.zeros((14,1))
-        self.x=x
-        self.y=np.array(y).reshape((506,1))
-        self.pred_y=np.array(np.dot(self.x,self.w))
-    def updata(self,stepsize):
-        self.pred_y = np.array(np.dot(self.x,self.w))
-        self.lossvector=1/2*(self.pred_y-self.y)**2
-        self.loss=sum(self.lossvector)
-        self.derivative=-np.dot(self.x.T,self.y)+np.dot(np.dot(self.x.T,self.x),self.w)
-        self.w = self.w - self.derivative * stepsize
+
+    def updata(self,stepsize,x,y):
+        y = np.array(y).reshape((y.size, 1))
+        self.pred_y = np.array(np.dot(x,self.w))
+        self.loss=sum(1/(y.size)*(self.pred_y-y)**2)
+        derivative=-np.dot(x.T,y)+np.dot(np.dot(x.T,x),self.w)
+        self.w = self.w - derivative * stepsize
+
+    def test_loss(self,x,y):
+        y=np.array(y).reshape((y.size,1))
+        self.pred_y = np.array(np.dot(x,self.w))
+        self.testloss=sum(1/(y.size)*(self.pred_y-y)**2)
+
+
 def run():
     [x, y] = skl.load_svmlight_file("housing_scale")
     x = x.todense()
     b = np.zeros(506)
     x = np.column_stack((x, b))
-    example=Linear(x,y)
-    loss=np.zeros(100)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.33, random_state = 42)
+    #training
+    example=Linear()
+    loss_train=np.zeros(100)
+    loss_test=np.zeros(100)
     for i in range(100):
-        example.updata(0.001)
-        if i<10:
-            print(example.loss)
-            print("\n")
-        loss[i]=example.loss
-    a = np.arange(100)
-    plot1 = pl.plot(a, loss[0:100], label='water')
+        example.updata(0.001,x_train,y_train)
+        loss_train[i]=example.loss
+        example.test_loss(x_test,y_test)
+        loss_test[i]=example.testloss
+    a=np.arange(100)
+    plot1=pl.plot(a,loss_test[0:100],label='test')
+    plot2 = pl.plot(a, loss_train[0:100], label='train')
+    pl.xlabel('epoch')
+    pl.xlabel('loss')
     pl.show()
 
 
