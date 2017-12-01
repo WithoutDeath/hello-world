@@ -1,0 +1,36 @@
+import random
+import sklearn.datasets as skl
+import numpy as np
+import pylab as pl
+class Linear(object):
+    def __init__(self,x,y):
+        self.w=np.zeros((14,1))
+        self.x=x
+        self.y=np.array(y).reshape((506,1))
+        self.pred_y=np.array(np.dot(self.x,self.w))
+    def updata(self,stepsize):
+        self.pred_y = np.array(np.dot(self.x,self.w))
+        self.lossvector=1/2*(self.pred_y-self.y)**2
+        self.loss=sum(self.lossvector)
+        self.derivative=-np.dot(self.x.T,self.y)+np.dot(np.dot(self.x.T,self.x),self.w)
+        self.w = self.w - self.derivative * stepsize
+def run():
+    [x, y] = skl.load_svmlight_file("housing_scale")
+    x = x.todense()
+    b = np.zeros(506)
+    x = np.column_stack((x, b))
+    example=Linear(x,y)
+    loss=np.zeros(100)
+    for i in range(100):
+        example.updata(0.001)
+        if i<10:
+            print(example.loss)
+            print("\n")
+        loss[i]=example.loss
+    a = np.arange(100)
+    plot1 = pl.plot(a, loss[0:100], label='water')
+    pl.show()
+
+
+if __name__ == '__main__':
+    run()
